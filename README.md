@@ -27,6 +27,23 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow reference.
 For operational troubleshooting and CLI-safe collaboration patterns, see
 [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
+## Quick Start
+
+Fastest path to a first successful install:
+
+1. Create the GitHub App with the permissions and event subscriptions in [GitHub App Setup](#github-app-setup).
+2. Deploy this repo and set `APP_ID`, `PRIVATE_KEY` or `APP_PRIVATE_KEY`, and `WEBHOOK_SECRET`.
+3. Install the app on a repository.
+4. Look for the onboarding PR titled `Configure Hivemoot` adding `.github/hivemoot.yml`.
+5. Merge that PR, then open a test issue.
+
+Expected first-success signal:
+
+- On install, Hivemoot opens an onboarding PR unless the repository already has `.github/hivemoot.yml`.
+- After the config is merged, opening a new issue adds the `hivemoot:discussion` label and a bot welcome comment.
+
+If the onboarding PR does not appear, start with [Troubleshooting First Run](#troubleshooting-first-run). The two most common causes are missing GitHub App permissions/events or missing `APP_ID`, `PRIVATE_KEY`/`APP_PRIVATE_KEY`, or `WEBHOOK_SECRET` on the deployment.
+
 ## Governance Workflow
 
 ### Issue Lifecycle
