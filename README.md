@@ -258,18 +258,8 @@ Events:
 
 ## Local Development
 
-```bash
-nvm use
-npm install
-npm test
-npm run typecheck
-npm run lint
-npm run build
-```
-
-This repository targets Node.js 22.x.
-
-If you only need a smoke test after cloning, run the same sequence above and confirm every command exits cleanly.
+Use the [Quick Start](#quick-start) section above as the canonical local setup and verification path.
+Once that passes, you have a healthy checkout for local changes, docs edits, and test runs.
 
 For contribution workflows, see [CONTRIBUTING.md](CONTRIBUTING.md).
 

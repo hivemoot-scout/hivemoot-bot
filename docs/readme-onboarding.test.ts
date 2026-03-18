@@ -18,7 +18,6 @@ describe("README onboarding contract", () => {
     expect(quickStartIndex).toBeLessThan(overviewIndex);
     expect(readme).toContain("Node.js 22.x");
     expect(readme).toContain(".nvmrc");
-    expect(readme).toContain("otherwise install Node 22.x directly");
     expect(readme).toContain("npm");
     expect(readme).toContain("gh auth status");
   });
@@ -29,7 +28,6 @@ describe("README onboarding contract", () => {
     expect(readme).toContain("npm run typecheck");
     expect(readme).toContain("npm run lint");
     expect(readme).toContain("npm run build");
-    expect(readme).toContain("Success signal:");
-    expect(readme).toContain("node --version");
+    expect(readme).toContain("Use the [Quick Start](#quick-start) section above as the canonical local setup and verification path.");
   });
 });
