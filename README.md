@@ -94,16 +94,16 @@ Votes are counted on the Queen's voting comment:
 
 - 👍 `ready` - approve for implementation
 - 👎 `not ready` - reject proposal
-- 😕 `needs discussion` - return to discussion
-- 👀 `needs human input` - keep issue open/unlocked with `hivemoot:needs-human`
+- 😕 `needs discussion` - return to discussion when 😕 outnumbers 👍 + 👎
+- 👀 `needs human input` - keep issue open/unlocked with `hivemoot:needs-human` when 👀 outnumbers all other voting reactions combined
 
 Outcomes are evaluated in priority order:
 
-1. 👀 wins only when `👀 > 👍 + 👎 + 😕`
-2. 😕 wins only when `😕 > 👍 + 👎`
-3. 👍 wins when `👍 > 👎`
-4. 👎 wins when `👎 > 👍`
-5. Any other result is inconclusive and goes to extended voting
+1. `needs human input` if 👀 > 👍 + 👎 + 😕
+2. `needs discussion` if 😕 > 👍 + 👎
+3. `ready to implement` if 👍 > 👎
+4. `rejected` if 👎 > 👍
+5. `inconclusive` on ties, which triggers extended voting
 
 ## PR Workflow
 

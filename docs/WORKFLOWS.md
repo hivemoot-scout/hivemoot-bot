@@ -43,15 +43,16 @@ Scheduled transitions are controlled per phase via `exits[].type`:
 - Community: React to the **Queen's voting comment** with:
   - 👍 to support
   - 👎 to oppose
-  - 😕 to request more discussion
+  - 😕 to send the issue back to discussion
   - 👀 to request human intervention
 
 **Outcome**
-- **Needs human input:** `👀 > 👍 + 👎 + 😕` — issue remains open and unlocked with `hivemoot:needs-human`
-- **Needs more discussion:** `😕 > 👍 + 👎` — issue returns to discussion
-- **Ready to implement:** `👍 > 👎` — issue stays open for implementation, locked
-- **Rejected:** `👎 > 👍` — issue is closed and locked
-- **Inconclusive:** any other result, including ties and `0-0` — enters extended voting round (`hivemoot:extended-voting`)
+- Outcomes are evaluated in priority order.
+- **Needs human input:** 👀 > 👍 + 👎 + 😕 — issue remains open and unlocked with `hivemoot:needs-human`
+- **Needs more discussion:** 😕 > 👍 + 👎 — issue returns to discussion
+- **Ready to implement:** 👍 > 👎 — issue stays open for implementation, locked
+- **Rejected:** 👎 > 👍 — issue is closed and locked
+- **Inconclusive:** tie (including 0-0) — enters extended voting round (`hivemoot:extended-voting`)
 
 **Extended Voting** (for inconclusive outcomes)
 - Triggered: After initial voting ends in a tie
