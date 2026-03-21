@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { hasSameRepoClosingKeywordRef } from "./closing-keywords.js";
+import {
+  getSameRepoClosingKeywordIssueNumbers,
+  hasSameRepoClosingKeywordRef,
+} from "./closing-keywords.js";
 
 describe("hasSameRepoClosingKeywordRef", () => {
   const repository = { owner: "hivemoot", repo: "hivemoot-bot" };
@@ -66,5 +69,35 @@ describe("hasSameRepoClosingKeywordRef", () => {
         repository
       )
     ).toBe(false);
+  });
+});
+
+describe("getSameRepoClosingKeywordIssueNumbers", () => {
+  const repository = { owner: "hivemoot", repo: "hivemoot-bot" };
+
+  it("returns all same-repo issue numbers from supported closing reference forms", () => {
+    expect(
+      getSameRepoClosingKeywordIssueNumbers(
+        [
+          "Fixes #21",
+          "Closes hivemoot/hivemoot-bot#34",
+          "Resolves https://github.com/hivemoot/hivemoot-bot/issues/55",
+        ].join("\n"),
+        repository
+      )
+    ).toEqual(new Set([21, 34, 55]));
+  });
+
+  it("ignores cross-repo and code-only references", () => {
+    expect(
+      getSameRepoClosingKeywordIssueNumbers(
+        [
+          "Fixes someone/else#21",
+          "`Closes #22`",
+          "```md\nResolves #23\n```",
+        ].join("\n"),
+        repository
+      )
+    ).toEqual(new Set());
   });
 });

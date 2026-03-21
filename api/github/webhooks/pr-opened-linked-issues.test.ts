@@ -258,6 +258,28 @@ describe("pull_request.opened linked issue resolution", () => {
     vi.useRealTimers();
   });
 
+  it("drops linked issues when the closing keyword only appears in fenced code", async () => {
+    const { handlers } = createWebhookHarness();
+    const handler = handlers.get("pull_request.opened");
+    expect(handler).toBeDefined();
+
+    const linkedIssue = {
+      number: 21,
+      title: "Issue",
+      state: "OPEN",
+      labels: { nodes: [] },
+    };
+    mocks.getLinkedIssues.mockResolvedValue([linkedIssue]);
+
+    await handler!(createContext("```md\nFixes #21\n```"));
+
+    expect(mocks.processImplementationIntake).toHaveBeenCalledWith(
+      expect.objectContaining({
+        linkedIssues: [],
+      })
+    );
+  });
+
   it("treats immediate and retry resolution paths consistently for equivalent bodies", async () => {
     vi.useFakeTimers();
     const { handlers } = createWebhookHarness();

@@ -18,8 +18,11 @@ import {
 import {
   getLinkedIssues,
 } from "../../lib/graphql-queries.js";
-import { hasSameRepoClosingKeywordRef } from "../../lib/closing-keywords.js";
-import { filterByLabel } from "../../lib/types.js";
+import {
+  getSameRepoClosingKeywordIssueNumbers,
+  hasSameRepoClosingKeywordRef,
+} from "../../lib/closing-keywords.js";
+import { filterByLabel, type LinkedIssue } from "../../lib/types.js";
 import { validateEnv, getAppId } from "../../lib/env-validation.js";
 import {
   processImplementationIntake,
@@ -95,6 +98,19 @@ function getRepoContext(repository: RepoPayload): RepoContext {
   };
 }
 
+function filterToConfirmedClosingRefs(
+  linkedIssues: LinkedIssue[],
+  prBody: string | null | undefined,
+  repository: { owner: string; repo: string },
+): LinkedIssue[] {
+  if (prBody === undefined) {
+    return linkedIssues;
+  }
+
+  const confirmedIssueNumbers = getSameRepoClosingKeywordIssueNumbers(prBody, repository);
+  return linkedIssues.filter((issue) => confirmedIssueNumbers.has(issue.number));
+}
+
 export function app(probotApp: Probot): void {
   probotApp.log.info("Queen bot initialized");
   registerHandlerDispatcher(probotApp, { eventMap: handlerEventMap });
@@ -156,7 +172,11 @@ export function app(probotApp: Probot): void {
         context.log.debug(`No config in ${fullName}; skipping PR automation`);
         return;
       }
-      let linkedIssues = initialLinkedIssues;
+      let linkedIssues = filterToConfirmedClosingRefs(
+        initialLinkedIssues,
+        context.payload.pull_request.body,
+        { owner, repo },
+      );
       const hasBodyClosingKeyword = linkedIssues.length === 0
         ? hasSameRepoClosingKeywordRef(context.payload.pull_request.body, { owner, repo })
         : false;
@@ -173,7 +193,11 @@ export function app(probotApp: Probot): void {
           "PR opened with closing keywords but no linked issues; retrying lookup"
         );
         await delay(PR_OPENED_LINK_RETRY_DELAY_MS);
-        linkedIssues = await getLinkedIssues(context.octokit, owner, repo, number);
+        linkedIssues = filterToConfirmedClosingRefs(
+          await getLinkedIssues(context.octokit, owner, repo, number),
+          context.payload.pull_request.body,
+          { owner, repo },
+        );
         didRetry = true;
       }
 
@@ -252,10 +276,15 @@ export function app(probotApp: Probot): void {
       const appId = getAppId();
       const issues = createIssueOperations(context.octokit, { appId });
       const prs = createPROperations(context.octokit, { appId });
-      const [linkedIssues, repoConfig] = await Promise.all([
+      const [initialLinkedIssues, repoConfig] = await Promise.all([
         getLinkedIssues(context.octokit, owner, repo, number),
         loadRepositoryConfig(context.octokit, owner, repo),
       ]);
+      const linkedIssues = filterToConfirmedClosingRefs(
+        initialLinkedIssues,
+        context.payload.pull_request.body,
+        { owner, repo },
+      );
       if (!repoConfig) {
         context.log.debug(`No config in ${fullName}; skipping PR update automation`);
         return;
@@ -429,10 +458,15 @@ export function app(probotApp: Probot): void {
       const appId = getAppId();
       const issues = createIssueOperations(context.octokit, { appId });
       const prs = createPROperations(context.octokit, { appId });
-      const [linkedIssues, repoConfig] = await Promise.all([
+      const [initialLinkedIssues, repoConfig] = await Promise.all([
         getLinkedIssues(context.octokit, owner, repo, number),
         loadRepositoryConfig(context.octokit, owner, repo),
       ]);
+      const linkedIssues = filterToConfirmedClosingRefs(
+        initialLinkedIssues,
+        context.payload.pull_request.body,
+        { owner, repo },
+      );
       if (!repoConfig) {
         context.log.debug(`No config in ${fullName}; skipping PR edit automation`);
         return;
@@ -650,13 +684,18 @@ export function app(probotApp: Probot): void {
         return;
       }
 
-      const [linkedIssues] = await Promise.all([
+      const [initialLinkedIssues] = await Promise.all([
         getLinkedIssues(context.octokit, owner, repo, number),
         // Leaderboard recalc only on approvals
         isApproval
           ? recalculateLeaderboardForPR(context.octokit, context.log, owner, repo, number)
           : Promise.resolve(),
       ]);
+      const linkedIssues = filterToConfirmedClosingRefs(
+        initialLinkedIssues,
+        context.payload.pull_request.body,
+        { owner, repo },
+      );
 
       if (repoConfig.governance.pr) {
         // Intake processing only on approvals

@@ -15,7 +15,6 @@ interface RepositoryRef {
 const CLOSING_KEYWORD_PATTERN =
   /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\b\s*:?\s+([^\s]+)/gi;
 
-const ISSUE_NUMBER_PATTERN = /^#\d+$/;
 const QUALIFIED_REFERENCE_PATTERN = /^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)#\d+$/;
 const ISSUE_URL_PATTERN = /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/issues\/\d+$/i;
 
@@ -32,9 +31,13 @@ function stripMarkdownCode(body: string): string {
     .replace(/`[^`]*`/g, " ");
 }
 
-export function hasSameRepoClosingKeywordRef(body: string | null | undefined, repository: RepositoryRef): boolean {
+export function getSameRepoClosingKeywordIssueNumbers(
+  body: string | null | undefined,
+  repository: RepositoryRef,
+): Set<number> {
+  const issueNumbers = new Set<number>();
   if (!body) {
-    return false;
+    return issueNumbers;
   }
 
   const searchableBody = stripMarkdownCode(body);
@@ -46,8 +49,10 @@ export function hasSameRepoClosingKeywordRef(body: string | null | undefined, re
     if (!rawTarget) continue;
 
     const target = stripTrailingPunctuation(rawTarget);
-    if (ISSUE_NUMBER_PATTERN.test(target)) {
-      return true;
+    const simpleMatch = target.match(/^#(\d+)$/);
+    if (simpleMatch) {
+      issueNumbers.add(Number(simpleMatch[1]));
+      continue;
     }
 
     const qualifiedMatch = target.match(QUALIFIED_REFERENCE_PATTERN);
@@ -57,7 +62,10 @@ export function hasSameRepoClosingKeywordRef(body: string | null | undefined, re
         owner.toLowerCase() === normalizedOwner &&
         repo.toLowerCase() === normalizedRepo
       ) {
-        return true;
+        const numberMatch = target.match(/#(\d+)$/);
+        if (numberMatch) {
+          issueNumbers.add(Number(numberMatch[1]));
+        }
       }
       continue;
     }
@@ -69,10 +77,20 @@ export function hasSameRepoClosingKeywordRef(body: string | null | undefined, re
         owner.toLowerCase() === normalizedOwner &&
         repo.toLowerCase() === normalizedRepo
       ) {
-        return true;
+        const numberMatch = target.match(/\/(\d+)$/);
+        if (numberMatch) {
+          issueNumbers.add(Number(numberMatch[1]));
+        }
       }
     }
   }
 
-  return false;
+  return issueNumbers;
+}
+
+export function hasSameRepoClosingKeywordRef(
+  body: string | null | undefined,
+  repository: RepositoryRef,
+): boolean {
+  return getSameRepoClosingKeywordIssueNumbers(body, repository).size > 0;
 }

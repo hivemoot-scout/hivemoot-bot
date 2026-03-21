@@ -1343,6 +1343,53 @@ describe("Queen Bot", () => {
       );
     });
 
+    it("should filter code-only closing references before approval intake", async () => {
+      const { handlers } = createWebhookHarness();
+      const handler = handlers.get("pull_request_review.submitted");
+      expect(handler).toBeDefined();
+
+      const octokit = createReviewOctokit();
+      const log = { info: vi.fn(), error: vi.fn() };
+      vi.mocked(getLinkedIssues).mockResolvedValueOnce([
+        {
+          number: 79,
+          title: "coverage gap",
+          state: "OPEN",
+          labels: { nodes: [{ name: LABELS.READY_TO_IMPLEMENT }] },
+        },
+      ] as any);
+      vi.mocked(loadRepositoryConfig).mockResolvedValueOnce({
+        governance: {
+          pr: {
+            maxPRsPerIssue: 5,
+            trustedReviewers: ["maintainer-a"],
+            intake: { mode: "always" },
+            mergeReady: { minApprovals: 2 },
+          },
+        },
+      } as any);
+
+      await handler!({
+        octokit,
+        log,
+        payload: {
+          review: { state: "approved" },
+          pull_request: { number: 22, body: "```md\nFixes #79\n```" },
+          repository: {
+            name: "test-repo",
+            full_name: "hivemoot/test-repo",
+            owner: { login: "hivemoot" },
+          },
+        },
+      });
+
+      expect(processImplementationIntake).toHaveBeenCalledWith(
+        expect.objectContaining({
+          linkedIssues: [],
+        })
+      );
+    });
+
     it("should skip intake and leaderboard on non-approval review", async () => {
       const { handlers } = createWebhookHarness();
       const handler = handlers.get("pull_request_review.submitted");
@@ -2182,20 +2229,22 @@ describe("Queen Bot", () => {
 
     it("should call processImplementationIntake on pull_request.synchronize", async () => {
       const { handlers } = createWebhookHarness();
-      vi.mocked(getLinkedIssues).mockResolvedValue([]);
+      vi.mocked(getLinkedIssues).mockResolvedValue([
+        { number: 1, title: "issue", state: "OPEN", labels: { nodes: [] } },
+      ] as any);
       vi.mocked(loadRepositoryConfig).mockResolvedValue(prConfig as any);
 
       await handlers.get("pull_request.synchronize")!({
         octokit: mkOctokit(),
         log: mkLog(),
         payload: {
-          pull_request: { number: 1, base: { ref: "main" } },
+          pull_request: { number: 1, body: "```md\nFixes #1\n```", base: { ref: "main" } },
           repository: testRepo,
         },
       });
 
       expect(processImplementationIntake).toHaveBeenCalledWith(
-        expect.objectContaining({ trigger: "updated" })
+        expect.objectContaining({ trigger: "updated", linkedIssues: [] })
       );
     });
 
@@ -2234,7 +2283,9 @@ describe("Queen Bot", () => {
 
     it("should call processImplementationIntake on pull_request.edited", async () => {
       const { handlers } = createWebhookHarness();
-      vi.mocked(getLinkedIssues).mockResolvedValue([]);
+      vi.mocked(getLinkedIssues).mockResolvedValue([
+        { number: 1, title: "issue", state: "OPEN", labels: { nodes: [] } },
+      ] as any);
       vi.mocked(loadRepositoryConfig).mockResolvedValue(prConfig as any);
 
       await handlers.get("pull_request.edited")!({
@@ -2242,13 +2293,18 @@ describe("Queen Bot", () => {
         log: mkLog(),
         payload: {
           changes: { body: { from: "old" } },
-          pull_request: { number: 1, base: { ref: "main" }, updated_at: "2026-01-01T00:00:00Z" },
+          pull_request: {
+            number: 1,
+            body: "Template example: `Fixes #1`",
+            base: { ref: "main" },
+            updated_at: "2026-01-01T00:00:00Z",
+          },
           repository: testRepo,
         },
       });
 
       expect(processImplementationIntake).toHaveBeenCalledWith(
-        expect.objectContaining({ trigger: "edited" })
+        expect.objectContaining({ trigger: "edited", linkedIssues: [] })
       );
     });
 
