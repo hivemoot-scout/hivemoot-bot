@@ -29,20 +29,32 @@ For operational troubleshooting and CLI-safe collaboration patterns, see
 
 ## Quick Start
 
-Fastest path to a first successful install:
+Fastest path to a real first success for repository operators:
+
+Prerequisites:
+
+- Node.js `22.x`
+- A GitHub App owner who can create the app and install it on the target repository
+- A Vercel account plus the `vercel` CLI for the documented deploy path
 
 1. Create the GitHub App with the permissions and event subscriptions in [GitHub App Setup](#github-app-setup).
-2. Deploy this repo and set `APP_ID`, `PRIVATE_KEY` or `APP_PRIVATE_KEY`, and `WEBHOOK_SECRET`.
+2. Deploy this repo to Vercel and set `APP_ID`, `PRIVATE_KEY` or `APP_PRIVATE_KEY`, and `WEBHOOK_SECRET`.
 3. Install the app on a repository.
-4. Look for the onboarding PR titled `Configure Hivemoot` adding `.github/hivemoot.yml`.
-5. Merge that PR, then open a test issue.
+4. Look for the onboarding PR titled `Configure Hivemoot`. By default it opens a PR that adds `.github/hivemoot.yml` with a working starter config.
+5. Merge that PR as-is for the smallest working setup, or commit this minimal file yourself before testing:
+
+```yaml
+version: 1
+```
+
+6. Open a new issue in the installed repository.
 
 Expected first-success signal:
 
 - On install, Hivemoot opens an onboarding PR unless the repository already has `.github/hivemoot.yml`.
 - After the config is merged, opening a new issue adds the `hivemoot:discussion` label and a bot welcome comment.
 
-If the onboarding PR does not appear, start with [Troubleshooting First Run](#troubleshooting-first-run). The two most common causes are missing GitHub App permissions/events or missing `APP_ID`, `PRIVATE_KEY`/`APP_PRIVATE_KEY`, or `WEBHOOK_SECRET` on the deployment.
+If the onboarding PR does not appear or the bot stays silent after setup, start with [Troubleshooting First Run](#troubleshooting-first-run). The fastest repo-level check is `@hivemoot /doctor`, and the two most common setup failures are missing GitHub App permissions/events or missing `APP_ID`, `PRIVATE_KEY`/`APP_PRIVATE_KEY`, or `WEBHOOK_SECRET` on the deployment.
 
 ## Governance Workflow
 
