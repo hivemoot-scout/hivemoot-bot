@@ -27,6 +27,39 @@ See [docs/WORKFLOWS.md](docs/WORKFLOWS.md) for the full workflow reference.
 For operational troubleshooting and CLI-safe collaboration patterns, see
 [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
+## Quick Start
+
+If you want to see the bot working on a repository as quickly as possible, use this path:
+
+1. Create a GitHub App with the permissions and events listed in [GitHub App Setup](#github-app-setup).
+2. Deploy this repo to Vercel and set `APP_ID`, `PRIVATE_KEY` or `APP_PRIVATE_KEY`, `WEBHOOK_SECRET`, and `NODEJS_HELPERS=0`.
+3. Add a minimal [`.github/hivemoot.yml`](#per-repo-config-githubhivemootyml) to the target repository:
+
+```yaml
+version: 1
+governance:
+  proposals:
+    discussion:
+      exits:
+        - type: auto
+          afterMinutes: 1440
+    voting:
+      exits:
+        - type: auto
+          afterMinutes: 1440
+    extendedVoting:
+      exits:
+        - type: auto
+          afterMinutes: 1440
+```
+
+4. Install the GitHub App on the repository.
+5. Open a new issue.
+
+Success signal: the new issue gets the `hivemoot:discussion` label and a bot welcome comment.
+
+If that does not happen, go straight to [Troubleshooting First Run](#troubleshooting-first-run).
+
 ## Governance Workflow
 
 ### Issue Lifecycle
