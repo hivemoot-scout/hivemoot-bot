@@ -2693,9 +2693,9 @@ describe("Queen Bot", () => {
         const body = JSON.parse(res.body);
         expect(body.status).toBe("misconfigured");
         expect(body.bot).toBe("Queen");
+        expect(body.missing).toEqual(["APP_ID", "WEBHOOK_SECRET"]);
         expect(body.checks.githubApp).toEqual({ ready: false });
         expect(body.checks.llm).toEqual({ ready: false, reason: "not_configured" });
-        expect(body.missing).toBeUndefined();
       });
 
       it("should report llm api_key_missing when provider configured but key absent", async () => {

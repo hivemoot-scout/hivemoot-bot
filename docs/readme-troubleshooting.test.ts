@@ -26,6 +26,7 @@ describe("README troubleshooting contract", () => {
     expect(troubleshooting).toContain("/api/github/webhooks");
     expect(troubleshooting).toContain('"status":"ok"');
     expect(troubleshooting).toContain('"status":"misconfigured"');
+    expect(troubleshooting).toContain("missing` array");
     expect(troubleshooting).toContain("APP_ID");
     expect(troubleshooting).toContain("PRIVATE_KEY");
     expect(troubleshooting).toContain("APP_PRIVATE_KEY");

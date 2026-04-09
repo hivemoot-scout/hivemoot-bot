@@ -1203,6 +1203,7 @@ export default function handler(req: IncomingMessage, res: ServerResponse): void
       JSON.stringify({
         status: validation.valid ? "ok" : "misconfigured",
         bot: "Queen",
+        missing: validation.valid ? undefined : validation.missing,
         checks: {
           githubApp: { ready: validation.valid },
           llm: getLLMReadiness(),
