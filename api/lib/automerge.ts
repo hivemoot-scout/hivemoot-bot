@@ -28,7 +28,10 @@ import {
   enablePullRequestAutoMerge,
   disablePullRequestAutoMerge,
 } from "./graphql-queries.js";
-import { isAutoMergeNotEnabledError } from "./transient-error.js";
+import {
+  isAutoMergeNotAllowedError,
+  isAutoMergeNotEnabledError,
+} from "./transient-error.js";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Types
@@ -335,8 +338,8 @@ export async function evaluateAutomerge(
         log?.info(`[PR #${ref.prNumber}] Enabled GitHub native auto-merge (${config.mergeMethod})`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        const hint = msg.includes("PullRequestAutoMergeNotAllowed")
-          ? " Verify the repository has branch protection rules configured."
+        const hint = isAutoMergeNotAllowedError(err)
+          ? " Enable 'Allow auto-merge' in the repository settings: Settings -> General -> Pull Requests -> Allow auto-merge."
           : "";
         const warnMsg = `[PR #${ref.prNumber}] Failed to enable GitHub auto-merge: ${msg}.${hint}`;
         if (log?.warn) { log.warn(warnMsg); } else { logger.warn(warnMsg); }

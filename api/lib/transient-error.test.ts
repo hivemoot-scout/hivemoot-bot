@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { GraphqlResponseError } from "@octokit/graphql";
-import { isTransientError, isAutoMergeNotEnabledError, TRANSIENT_NETWORK_CODES } from "./transient-error.js";
+import {
+  isAutoMergeNotAllowedError,
+  isAutoMergeNotEnabledError,
+  isTransientError,
+  TRANSIENT_NETWORK_CODES,
+} from "./transient-error.js";
 
 describe("isTransientError", () => {
   describe("network codes", () => {
@@ -142,5 +147,74 @@ describe("isAutoMergeNotEnabledError", () => {
       errors: [{ message: "Not Found", type: "NOT_FOUND" }],
     });
     expect(isAutoMergeNotEnabledError(foreignError)).toBe(false);
+  });
+});
+
+describe("isAutoMergeNotAllowedError", () => {
+  function makeNotAllowedError(): GraphqlResponseError<null> {
+    return new GraphqlResponseError(
+      { url: "https://api.github.com/graphql" },
+      {},
+      {
+        data: null,
+        errors: [
+          {
+            message: "Pull request auto merge is not allowed for this repository.",
+            type: "FORBIDDEN",
+          },
+        ],
+      }
+    );
+  }
+
+  it("returns true for a GraphqlResponseError with FORBIDDEN type and 'not allowed' message", () => {
+    expect(isAutoMergeNotAllowedError(makeNotAllowedError())).toBe(true);
+  });
+
+  it("returns false for a plain Error with the old string sentinel", () => {
+    expect(isAutoMergeNotAllowedError(new Error("PullRequestAutoMergeNotAllowed"))).toBe(false);
+  });
+
+  it("returns false for a GraphqlResponseError with FORBIDDEN type but unrelated message", () => {
+    const err = new GraphqlResponseError(
+      { url: "https://api.github.com/graphql" },
+      {},
+      { data: null, errors: [{ message: "Resource not accessible by integration.", type: "FORBIDDEN" }] }
+    );
+    expect(isAutoMergeNotAllowedError(err)).toBe(false);
+  });
+
+  it("returns false for a GraphqlResponseError with a different type", () => {
+    const err = new GraphqlResponseError(
+      { url: "https://api.github.com/graphql" },
+      {},
+      { data: null, errors: [{ message: "Not Found", type: "NOT_FOUND" }] }
+    );
+    expect(isAutoMergeNotAllowedError(err)).toBe(false);
+  });
+
+  it("returns false for null", () => {
+    expect(isAutoMergeNotAllowedError(null)).toBe(false);
+  });
+
+  it("returns true for a cross-version instance (duck-typed, not instanceof)", () => {
+    const foreignError = Object.assign(new Error("Request failed"), {
+      name: "GraphqlResponseError",
+      errors: [
+        {
+          message: "Pull request auto merge is not allowed for this repository.",
+          type: "FORBIDDEN",
+        },
+      ],
+    });
+    expect(isAutoMergeNotAllowedError(foreignError)).toBe(true);
+  });
+
+  it("returns false for a cross-version instance with a non-matching error type", () => {
+    const foreignError = Object.assign(new Error("Request failed"), {
+      name: "GraphqlResponseError",
+      errors: [{ message: "Not Found", type: "NOT_FOUND" }],
+    });
+    expect(isAutoMergeNotAllowedError(foreignError)).toBe(false);
   });
 });

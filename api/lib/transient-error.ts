@@ -74,3 +74,43 @@ export function isAutoMergeNotEnabledError(error: unknown): boolean {
       /not enabled/i.test(String((e as { message?: unknown }).message ?? ""))
   );
 }
+
+/**
+ * Determine whether a GraphQL error means the repository does not permit
+ * native auto-merge at the repo-settings level.
+ *
+ * GitHub returns `GraphqlResponseError` with `errors[].type === "FORBIDDEN"`
+ * and a message containing "not allowed" when `enablePullRequestAutoMerge`
+ * is called on a repository that has auto-merge disabled in Settings.
+ *
+ * Matching on `.type === "FORBIDDEN"` alone is too broad because other
+ * permission failures can use the same type. The message filter narrows the
+ * classifier to the auto-merge policy case. When this function returns `true`,
+ * the caller emits a hint pointing operators at Settings → General →
+ * Pull Requests → Allow auto-merge.
+ *
+ * Uses duck-typing on `.name` for the same dual-octokit-version reason as
+ * `isAutoMergeNotEnabledError` above.
+ *
+ * NOTE: `errors[].type === "FORBIDDEN"` is inferred from the GitHub GraphQL schema
+ * for policy-level rejections, not confirmed from a live API response. If the hint
+ * does not fire as expected, verify the actual `type` value and update accordingly.
+ */
+export function isAutoMergeNotAllowedError(error: unknown): boolean {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    (error as { name?: unknown }).name !== "GraphqlResponseError"
+  ) {
+    return false;
+  }
+  const errors = (error as { errors?: unknown }).errors;
+  if (!Array.isArray(errors)) return false;
+  return errors.some(
+    (e: unknown) =>
+      typeof e === "object" &&
+      e !== null &&
+      (e as { type?: unknown }).type === "FORBIDDEN" &&
+      /not allowed/i.test(String((e as { message?: unknown }).message ?? ""))
+  );
+}
