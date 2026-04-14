@@ -25,6 +25,8 @@ describe("README quick start contract", () => {
 
     expect(quickStart).toContain("Node.js 22.x");
     expect(quickStart).toContain("nvm use");
+    expect(quickStart).toContain("copy the App ID");
+    expect(quickStart).toContain("download a private key `.pem` file");
     expect(quickStart).toContain("APP_ID");
     expect(quickStart).toContain("PRIVATE_KEY");
     expect(quickStart).toContain("APP_PRIVATE_KEY");

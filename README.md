@@ -17,7 +17,7 @@ The 👑 Queen — your AI team manager. She runs discussions, calls votes, enfo
 
 **Prerequisites:** Node.js 22.x, a [Vercel account](https://vercel.com) with the [Vercel CLI](https://vercel.com/docs/cli) installed, and a GitHub account with permission to create GitHub Apps on your organization or personal account.
 
-1. **[Create a GitHub App](#github-app-setup)** with the required permissions and event subscriptions listed below.
+1. **[Create a GitHub App](#github-app-setup)** with the required permissions and event subscriptions listed below. After you create it, copy the App ID from the app settings and download a private key `.pem` file for `PRIVATE_KEY` (or `APP_PRIVATE_KEY`).
 2. **Clone and install dependencies:**
    ```bash
    git clone https://github.com/hivemoot/hivemoot-bot.git
@@ -25,7 +25,7 @@ The 👑 Queen — your AI team manager. She runs discussions, calls votes, enfo
    nvm use
    npm install
    ```
-3. **Create the Vercel project and set secrets** before the first production deploy. Add `APP_ID`, `PRIVATE_KEY` (or `APP_PRIVATE_KEY`), and `WEBHOOK_SECRET` in the Vercel dashboard or with `vercel env add`.
+3. **Create the Vercel project and set secrets** before the first production deploy. Add the GitHub App `APP_ID`, the full private key `.pem` contents as `PRIVATE_KEY` (or `APP_PRIVATE_KEY`), and a `WEBHOOK_SECRET` you choose in the Vercel dashboard or with `vercel env add`.
 4. **Deploy** after those secrets exist:
    ```bash
    vercel --prod
