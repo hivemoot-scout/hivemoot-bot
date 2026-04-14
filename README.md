@@ -22,9 +22,10 @@ The 👑 Queen — your AI team manager. She runs discussions, calls votes, enfo
    ```bash
    git clone https://github.com/hivemoot/hivemoot-bot.git
    cd hivemoot-bot
+   nvm use
    npm install
    ```
-3. **Create the Vercel project and set secrets** before the first production deploy: `APP_ID`, `PRIVATE_KEY` (or `APP_PRIVATE_KEY`), and `WEBHOOK_SECRET`.
+3. **Create the Vercel project and set secrets** before the first production deploy. Add `APP_ID`, `PRIVATE_KEY` (or `APP_PRIVATE_KEY`), and `WEBHOOK_SECRET` in the Vercel dashboard or with `vercel env add`.
 4. **Deploy** after those secrets exist:
    ```bash
    vercel --prod

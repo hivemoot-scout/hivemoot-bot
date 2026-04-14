@@ -24,10 +24,12 @@ describe("README quick start contract", () => {
     const quickStart = extractSection(readReadme(), "Quick Start");
 
     expect(quickStart).toContain("Node.js 22.x");
+    expect(quickStart).toContain("nvm use");
     expect(quickStart).toContain("APP_ID");
     expect(quickStart).toContain("PRIVATE_KEY");
     expect(quickStart).toContain("APP_PRIVATE_KEY");
     expect(quickStart).toContain("WEBHOOK_SECRET");
+    expect(quickStart).toContain("vercel env add");
     expect(quickStart).toContain(".github/hivemoot.yml");
   });
 
